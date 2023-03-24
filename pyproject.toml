@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyexample"
-version = "0.1.0"
+version = "1.0.0"
 description = "Coding example!"
 authors = ["Viktor Kurti <aplikat@ya.ru>"]
 readme = "README.md"
@@ -70,8 +70,8 @@ markers = [
 
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "0.1.0"
-tag_format = "v$version"
+version = "1.0.0"
+tag_format = "$version"
 version_files = [
     "pyproject.toml:version"
 ]
