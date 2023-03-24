@@ -1,0 +1,8 @@
+GUI_URL = "https://www.saucedemo.com"
+API_URL = "https://reqres.in"
+GET_LIST_USERS_API_CALL = "@format {this.API_URL}/api/users?page=2"
+GET_SINGLE_USER_API_CALL = "@format {this.API_URL}/api/users/2"
+GET_SINGLE_USER_NOT_FOUND_API_CALL = "@format {this.API_URL}/api/users/23"
+POST_CREATE_API_CALL = "@format {this.API_URL}/api/users"
+WRONG_API_CALL = "@format {this.API_URL}/wrongbcbcbcbcbcbcb"
+DELAY = 1
