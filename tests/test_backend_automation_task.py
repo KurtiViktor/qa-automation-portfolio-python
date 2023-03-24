@@ -147,7 +147,7 @@ class TestReqresinApi:
 
     @allure.step
     def get_api_call(self, url, status_code=200):
-        response = requests.get(url, timeout=5)
+        response = requests.get(url, timeout=settings.DELAY)
         assert_that(response.status_code).is_equal_to(status_code)
         return response
 
@@ -167,7 +167,7 @@ class TestReqresinApi:
     @allure.step
     def post_api_call(self, url, status_code=200, data=None):
         dataset = str(cattrs.unstructure(data))
-        response = requests.post(url, data=dataset, timeout=5)
+        response = requests.post(url, data=dataset, timeout=settings.DELAY)
         assert_that(response.status_code).is_equal_to(status_code)
         return response
 
@@ -206,7 +206,7 @@ class TestReqresinApi:
         response = requests.get(
             settings.GET_SINGLE_USER_NOT_FOUND_API_CALL,
             headers=headers,
-            timeout=5
+            timeout=settings.DELAY
         )
         assert_that(response.status_code).is_not_equal_to(200)
 
