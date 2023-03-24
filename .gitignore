@@ -127,15 +127,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-/.idea/vcs.xml
-/.idea/thinksurance.iml
-/.idea/inspectionProfiles/profiles_settings.xml
-/.idea/modules.xml
-/.idea/misc.xml
-/.idea/workspace.xml
-/.idea/pyexample.iml
-/.idea/.gitignore
-/.idea/pylint.xml
+/.idea/
 
 # custom
 /report/allure_results
