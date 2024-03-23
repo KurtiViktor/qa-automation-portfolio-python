@@ -2,11 +2,24 @@
 name = "pyexample"
 version = "1.0.0"
 description = "Coding example!"
-authors = ["Viktor Kurti <aplikat@ya.ru>"]
+authors = ["Viktor Kurti <vp.kurti@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
+pytest = "^8.1.1"
+pytest-repeat = "^0.9.3"
+pytest-html = "^4.1.1"
+allure-pytest = "^2.13.3"
+requests = "^2.31.0"
+invoke = "^2.2.0"
+dynaconf = "^3.2.5"
+pandas = "^2.2.1"
+faker = "^24.3.0"
+attrs = "^23.2.0"
+cattrs = "^23.2.3"
+assertpy = "^1.1"
+jsonschema = "^4.21.1"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -14,33 +27,6 @@ pre-commit = "^3.2.0"
 commitizen = "^2.42.1"
 pylint = "^2.17.0"
 
-
-[tool.poetry.group.pytest.dependencies]
-pytest = "^7.2.2"
-pytest-repeat = "^0.9.1"
-pytest-html = "^3.2.0"
-allure-pytest = "^2.13.1"
-
-
-[tool.poetry.group.api.dependencies]
-requests = "^2.28.2"
-
-
-[tool.poetry.group.ci.dependencies]
-invoke = "^2.0.0"
-dynaconf = "^3.1.12"
-
-
-[tool.poetry.group.data.dependencies]
-pandas = "^1.5.3"
-faker = "^18.3.1"
-
-
-[tool.poetry.group.test.dependencies]
-attrs = "^22.2.0"
-assertpy = "^1.1"
-cattrs = "^22.2.0"
-jsonschema = "^4.17.3"
 
 [tool.pytest.ini_options]
 minversion = "7.0"
