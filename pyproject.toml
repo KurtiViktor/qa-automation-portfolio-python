@@ -7,13 +7,13 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
+selene = {version = "^2.0.0rc9", allow-prereleases = true}
 
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.2.0"
 commitizen = "^2.42.1"
 pylint = "^2.17.0"
-
 
 
 [tool.poetry.group.pytest.dependencies]
@@ -23,14 +23,12 @@ pytest-html = "^3.2.0"
 allure-pytest = "^2.13.1"
 
 
-
 [tool.poetry.group.api.dependencies]
 requests = "^2.28.2"
 
 
 [tool.poetry.group.web.dependencies]
 selenium = "^4.8.2"
-selene = "^1.0.2"
 
 
 [tool.poetry.group.ci.dependencies]
@@ -52,9 +50,7 @@ jsonschema = "^4.17.3"
 [tool.pytest.ini_options]
 minversion = "7.0"
 addopts = "--alluredir=report/allure_results --html=report/pytest_html.html --self-contained-html"
-testpaths = [
-    "tests",
-]
+testpaths = ["tests"]
 markers = [
     "smoke",
     "UAT",
@@ -64,7 +60,7 @@ markers = [
     "component",
     "uat",
     "qa",
-    "negative"
+    "negative",
 ]
 
 
@@ -72,9 +68,7 @@ markers = [
 name = "cz_conventional_commits"
 version = "1.0.0"
 tag_format = "$version"
-version_files = [
-    "pyproject.toml:version"
-]
+version_files = ["pyproject.toml:version"]
 bump_message = "bump: version $current_version → $new_version"
 update_changelog_on_bump = true
 annotated_tag = true

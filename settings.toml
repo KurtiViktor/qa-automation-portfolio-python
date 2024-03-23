@@ -1,3 +1,4 @@
+DRIVER_PATH = "/drivers/chromedriver_win32/chromedriver.exe"
 GUI_URL = "https://www.saucedemo.com"
 API_URL = "https://reqres.in"
 GET_LIST_USERS_API_CALL = "@format {this.API_URL}/api/users?page=2"
