@@ -7,7 +7,6 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-selene = {version = "^2.0.0rc9", allow-prereleases = true}
 
 
 [tool.poetry.group.dev.dependencies]

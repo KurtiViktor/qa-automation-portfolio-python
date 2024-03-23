@@ -4,8 +4,6 @@ over the classic xUnit style of setup/teardown functions
 """
 
 import pytest
-from selene import browser
-from selenium import webdriver
 
 from config import settings
 
