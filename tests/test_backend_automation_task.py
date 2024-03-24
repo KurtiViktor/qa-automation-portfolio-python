@@ -7,26 +7,18 @@ GET (Single and List of users)
 POST (Create user)
 """
 import allure
-import cattrs
 import jsonschema
 import pytest
 import requests
 from assertpy import assert_that
-from attr import define, field
+from attrs import asdict, define, field
 from jsonschema import validate
 
 from config import settings
 
 
 @define
-class BaseAttrs:
-
-    def to_str(self):
-        return str(cattrs.unstructure(self))
-
-
-@define
-class UserData(BaseAttrs):
+class UserData:
     id: int = field(init=False)
     email: str = field(init=False)
     first_name: str = field(init=False)
@@ -65,7 +57,7 @@ class UserData(BaseAttrs):
 
 
 @define
-class SupportData(BaseAttrs):
+class SupportData:
     url: str = field(init=False)
     text: str = field(init=False)
 
@@ -78,7 +70,7 @@ class SupportData(BaseAttrs):
 
 
 @define
-class SingleUserResponse(BaseAttrs):
+class SingleUserResponse:
     data: UserData = field(init=False)
     support: SupportData = field(init=False)
 
@@ -91,7 +83,7 @@ class SingleUserResponse(BaseAttrs):
 
 
 @define
-class MultipleUserResponse(BaseAttrs):
+class MultipleUserResponse:
     page: int = field(init=False)
     per_page: int = field(init=False)
     total: int = field(init=False)
@@ -112,7 +104,7 @@ class MultipleUserResponse(BaseAttrs):
 
 
 @define
-class CreateUserRequest(BaseAttrs):
+class CreateUserRequest:
     name: str = field(init=False)
     job: str = field(init=False)
 
@@ -125,7 +117,7 @@ class CreateUserRequest(BaseAttrs):
 
 
 @define
-class CreateUserResponse(BaseAttrs):
+class CreateUserResponse:
     name: str = field(init=False)
     job: str = field(init=False)
     id: str = field(init=False)
@@ -143,118 +135,104 @@ class CreateUserResponse(BaseAttrs):
 
 @pytest.mark.api
 @pytest.mark.component
-class TestReqresinApi:
+class TestBackend:
 
     @allure.step
-    def get_api_call(self, url, status_code=200):
+    def get(self, url, code=200):
         response = requests.get(url, timeout=settings.DELAY)
-        assert_that(response.status_code).is_equal_to(status_code)
+        assert_that(response.status_code).is_equal_to(code)
         return response
 
     @allure.step
-    def get_api_call_json_response(self, url, status_code=200):
-        response = self.get_api_call(url=url, status_code=status_code)
-        return response.json()
-
-    @allure.step
-    def validate_json(self, json_data, json_schema):
+    def validate(self, json, schema):
         try:
-            validate(instance=json_data, schema=json_schema)
+            validate(instance=json, schema=schema)
         except jsonschema.exceptions.ValidationError:
             return False
         return True
 
     @allure.step
-    def post_api_call(self, url, status_code=200, data=None):
-        dataset = str(cattrs.unstructure(data))
-        response = requests.post(url, data=dataset, timeout=settings.DELAY)
-        assert_that(response.status_code).is_equal_to(status_code)
+    def post(self, url, code=200, data=None):
+        response = requests.post(url, data=data, timeout=settings.DELAY)
+        assert_that(response.status_code).is_equal_to(code)
         return response
-
-    @allure.step
-    def post_api_call_json_response(self, url, status_code=200, data=None):
-        response = self.post_api_call(url=url, status_code=status_code, data=data)
-        return response.json()
 
     @pytest.mark.smoke
     @pytest.mark.test_id("Smoke-1")
-    def test_get_single_user_api_call(self):
-        real_response = self.get_api_call_json_response(url=settings.GET_SINGLE_USER_API_CALL)
-        expected_response = SingleUserResponse.default().to_str()
-        assert_that(str(real_response)).is_equal_to(expected_response)
+    def test_get_single_user(self):
+        real = self.get(url=settings.GET_SINGLE_USER)
+        expected = SingleUserResponse.default()
+        assert_that(real.json()).is_equal_to(asdict(expected))
 
     @pytest.mark.negative
     @pytest.mark.test_id("Component-1")
-    def test_get_single_user_api_call_negative(self):
-        real_response = self.get_api_call_json_response(url=settings.GET_SINGLE_USER_API_CALL)
-        assert_that(real_response['data']).contains('email')
-        assert_that(real_response['data']).does_not_contain('bla')
-        assert_that(real_response).does_not_contain_duplicates()
+    def test_get_single_user_negative(self):
+        real = self.get(url=settings.GET_SINGLE_USER).json()
+        assert_that(real['data']).contains('email')
+        assert_that(real['data']).does_not_contain('bla')
+        assert_that(real).does_not_contain_duplicates()
 
     @pytest.mark.test_id("Component-2")
-    def test_get_single_user_not_found_api_call(self):
-        real_response = self.get_api_call(
-            url=settings.GET_SINGLE_USER_NOT_FOUND_API_CALL,
-            status_code=404
+    def test_get_single_user_not_found(self):
+        real = self.get(
+            url=settings.GET_SINGLE_USER_NOT_FOUND,
+            code=404
         )
-        assert_that(str(real_response.json())).is_equal_to('{}')
+        assert_that(str(real.json())).is_equal_to('{}')
 
     @pytest.mark.negative
     @pytest.mark.test_id("Component-3")
-    def test_get_single_user_not_found_api_call_negative(self):
+    def test_get_single_user_not_found_negative(self):
         headers = {'Content-type': 'application/json'}
-        response = requests.get(
-            settings.GET_SINGLE_USER_NOT_FOUND_API_CALL,
+        real = requests.get(
+            settings.GET_SINGLE_USER_NOT_FOUND,
             headers=headers,
             timeout=settings.DELAY
         )
-        assert_that(response.status_code).is_not_equal_to(200)
+        assert_that(real.status_code).is_not_equal_to(200)
 
     @pytest.mark.test_id("Component-4")
-    def test_get_list_users_api_call(self):
-        real_response = self.get_api_call_json_response(url=settings.GET_LIST_USERS_API_CALL)
-        expected_response = MultipleUserResponse.default()
-        assert_that(real_response['page']).is_equal_to(expected_response.page)
-        assert_that(real_response['per_page']).is_equal_to(expected_response.per_page)
-        assert_that(real_response['total']).is_equal_to(expected_response.total)
-        assert_that(real_response['total_pages']).is_equal_to(expected_response.total_pages)
-        assert_that(str(real_response['data'])).contains(UserData.byron().to_str())
-        assert_that(str(real_response['support'])).is_equal_to(SupportData.default().to_str())
+    def test_get_list_users(self):
+        real = self.get(url=settings.GET_LIST_USERS).json()
+        expected = MultipleUserResponse.default()
+        assert_that(real['page']).is_equal_to(expected.page)
+        assert_that(real['per_page']).is_equal_to(expected.per_page)
+        assert_that(real['total']).is_equal_to(expected.total)
+        assert_that(real['total_pages']).is_equal_to(expected.total_pages)
+        assert_that(real['data']).contains(asdict(UserData.byron()))
+        assert_that(real['support']).is_equal_to(asdict(SupportData.default()))
 
     @pytest.mark.negative
     @pytest.mark.test_id("Component-5")
-    def test_get_list_users_api_call_negative(self):
-        real_response = self.get_api_call_json_response(url=settings.GET_LIST_USERS_API_CALL)
-        assert_that(real_response['data']).does_not_contain(UserData.blabla().to_str())
-        assert_that(real_response).does_not_contain_duplicates()
+    def test_get_list_users_negative(self):
+        real = self.get(url=settings.GET_LIST_USERS).json()
+        assert_that(real['data']).does_not_contain(asdict(UserData.blabla()))
+        assert_that(real).does_not_contain_duplicates()
 
     @pytest.mark.test_id("Component-6")
-    def test_post_create_api_call(self):
-        real_response = self.post_api_call_json_response(
-            status_code=201,
-            url=settings.POST_CREATE_API_CALL,
-            data=CreateUserRequest.default().to_str()
+    def test_post_create(self):
+        real = self.post(
+            code=201,
+            url=settings.POST_CREATE,
+            data=asdict(CreateUserRequest.default())
         )
         # Describe what kind of json you expect.
-        post_schema = {
+        schema = {
             "type": "object",
             "properties": {
                 "id": {"type": "string"},
                 "createdAt": {"type": "string"},
             },
         }
-        assert_that(self.validate_json(json_data=real_response, json_schema=post_schema)).is_true()
+        assert_that(self.validate(json=real.json(), schema=schema)).is_true()
 
     @pytest.mark.negative
     @pytest.mark.test_id("Component-7")
-    def test_post_create_api_call_negative(self):
-        real_response = self.post_api_call(
-            status_code=201,
-            url=settings.POST_CREATE_API_CALL
-        )
-        assert_that(str(real_response.json())).does_not_contain('fhfhfhfhfkh')
+    def test_post_create_negative(self):
+        real = self.post(code=201, url=settings.POST_CREATE)
+        assert_that(real.json()).does_not_contain('fhfhfhfhfkh')
 
     @pytest.mark.negative
     @pytest.mark.test_id("Component-8")
-    def test_call_wrong_api_call(self):
-        self.get_api_call(url=settings.WRONG_API_CALL, status_code=404)
+    def test_wrong(self):
+        self.get(url=settings.WRONG, code=404)

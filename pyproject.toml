@@ -17,7 +17,6 @@ dynaconf = "^3.2.5"
 pandas = "^2.2.1"
 faker = "^24.3.0"
 attrs = "^23.2.0"
-cattrs = "^23.2.3"
 assertpy = "^1.1"
 jsonschema = "^4.21.1"
 
