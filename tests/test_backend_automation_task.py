@@ -6,13 +6,14 @@ for the following endpoints(positive and negative scenarios):
 GET (Single and List of users)
 POST (Create user)
 """
+
 import allure
-import jsonschema
 import pytest
 import requests
 from assertpy import assert_that
 from attrs import asdict, define, field
 from jsonschema import validate
+from jsonschema.exceptions import ValidationError
 
 from config import settings
 
@@ -29,9 +30,9 @@ class UserData:
     def default(cls):
         default = cls()
         default.id = 2
-        default.email = 'janet.weaver@reqres.in'
-        default.first_name = 'Janet'
-        default.last_name = 'Weaver'
+        default.email = "janet.weaver@reqres.in"
+        default.first_name = "Janet"
+        default.last_name = "Weaver"
         default.avatar = "https://reqres.in/img/faces/2-image.jpg"
         return default
 
@@ -39,9 +40,9 @@ class UserData:
     def byron(cls):
         byron = cls()
         byron.id = 10
-        byron.email = 'byron.fields@reqres.in'
-        byron.first_name = 'Byron'
-        byron.last_name = 'Fields'
+        byron.email = "byron.fields@reqres.in"
+        byron.first_name = "Byron"
+        byron.last_name = "Fields"
         byron.avatar = "https://reqres.in/img/faces/10-image.jpg"
         return byron
 
@@ -49,9 +50,9 @@ class UserData:
     def blabla(cls):
         blabla = cls()
         blabla.id = -1
-        blabla.email = 'blabla.blabla@reqres.in'
-        blabla.first_name = 'blabla'
-        blabla.last_name = 'blabla'
+        blabla.email = "blabla.blabla@reqres.in"
+        blabla.first_name = "blabla"
+        blabla.last_name = "blabla"
         blabla.avatar = "https://reqres.in/img/faces/10-image.jpg"
         return blabla
 
@@ -64,8 +65,10 @@ class SupportData:
     @classmethod
     def default(cls):
         default = cls()
-        default.url = 'https://reqres.in/#support-heading'
-        default.text = 'To keep ReqRes free, contributions towards server costs are appreciated!'
+        default.url = "https://reqres.in/#support-heading"
+        default.text = (
+            "To keep ReqRes free, contributions towards server costs are appreciated!"
+        )
         return default
 
 
@@ -111,8 +114,8 @@ class CreateUserRequest:
     @classmethod
     def default(cls):
         default = cls()
-        default.name = 'vkurti'
-        default.job = 'qa'
+        default.name = "vkurti"
+        default.job = "qa"
         return default
 
 
@@ -126,17 +129,16 @@ class CreateUserResponse:
     @classmethod
     def default(cls):
         default = cls()
-        default.name = 'vkurti'
-        default.job = 'qa'
-        default.id = '777'
-        default.createdAt = '2023-01-12T09:52:35.026Z'
+        default.name = "vkurti"
+        default.job = "qa"
+        default.id = "777"
+        default.createdAt = "2023-01-12T09:52:35.026Z"
         return default
 
 
 @pytest.mark.api
 @pytest.mark.component
 class TestBackend:
-
     @allure.step
     def get(self, url, code=200):
         response = requests.get(url, timeout=settings.DELAY)
@@ -147,7 +149,7 @@ class TestBackend:
     def validate(self, json, schema):
         try:
             validate(instance=json, schema=schema)
-        except jsonschema.exceptions.ValidationError:
+        except ValidationError:
             return False
         return True
 
@@ -158,63 +160,58 @@ class TestBackend:
         return response
 
     @pytest.mark.smoke
-    @pytest.mark.test_id("Smoke-1")
+    @pytest.mark.testid("Smoke-1")
     def test_get_single_user(self):
         real = self.get(url=settings.GET_SINGLE_USER)
         expected = SingleUserResponse.default()
         assert_that(real.json()).is_equal_to(asdict(expected))
 
     @pytest.mark.negative
-    @pytest.mark.test_id("Component-1")
+    @pytest.mark.testid("Component-1")
     def test_get_single_user_negative(self):
         real = self.get(url=settings.GET_SINGLE_USER).json()
-        assert_that(real['data']).contains('email')
-        assert_that(real['data']).does_not_contain('bla')
+        assert_that(real["data"]).contains("email")
+        assert_that(real["data"]).does_not_contain("bla")
         assert_that(real).does_not_contain_duplicates()
 
-    @pytest.mark.test_id("Component-2")
+    @pytest.mark.testid("Component-2")
     def test_get_single_user_not_found(self):
-        real = self.get(
-            url=settings.GET_SINGLE_USER_NOT_FOUND,
-            code=404
-        )
-        assert_that(str(real.json())).is_equal_to('{}')
+        real = self.get(url=settings.GET_SINGLE_USER_NOT_FOUND, code=404)
+        assert_that(str(real.json())).is_equal_to("{}")
 
     @pytest.mark.negative
-    @pytest.mark.test_id("Component-3")
+    @pytest.mark.testid("Component-3")
     def test_get_single_user_not_found_negative(self):
-        headers = {'Content-type': 'application/json'}
+        headers = {"Content-type": "application/json"}
         real = requests.get(
-            settings.GET_SINGLE_USER_NOT_FOUND,
+            url=settings.GET_SINGLE_USER_NOT_FOUND,
             headers=headers,
-            timeout=settings.DELAY
+            timeout=settings.DELAY,
         )
         assert_that(real.status_code).is_not_equal_to(200)
 
-    @pytest.mark.test_id("Component-4")
+    @pytest.mark.testid("Component-4")
     def test_get_list_users(self):
         real = self.get(url=settings.GET_LIST_USERS).json()
         expected = MultipleUserResponse.default()
-        assert_that(real['page']).is_equal_to(expected.page)
-        assert_that(real['per_page']).is_equal_to(expected.per_page)
-        assert_that(real['total']).is_equal_to(expected.total)
-        assert_that(real['total_pages']).is_equal_to(expected.total_pages)
-        assert_that(real['data']).contains(asdict(UserData.byron()))
-        assert_that(real['support']).is_equal_to(asdict(SupportData.default()))
+        assert_that(real["page"]).is_equal_to(expected.page)
+        assert_that(real["per_page"]).is_equal_to(expected.per_page)
+        assert_that(real["total"]).is_equal_to(expected.total)
+        assert_that(real["total_pages"]).is_equal_to(expected.total_pages)
+        assert_that(real["data"]).contains(asdict(UserData.byron()))
+        assert_that(real["support"]).is_equal_to(asdict(SupportData.default()))
 
     @pytest.mark.negative
-    @pytest.mark.test_id("Component-5")
+    @pytest.mark.testid("Component-5")
     def test_get_list_users_negative(self):
         real = self.get(url=settings.GET_LIST_USERS).json()
-        assert_that(real['data']).does_not_contain(asdict(UserData.blabla()))
+        assert_that(real["data"]).does_not_contain(asdict(UserData.blabla()))
         assert_that(real).does_not_contain_duplicates()
 
-    @pytest.mark.test_id("Component-6")
+    @pytest.mark.testid("Component-6")
     def test_post_create(self):
         real = self.post(
-            code=201,
-            url=settings.POST_CREATE,
-            data=asdict(CreateUserRequest.default())
+            code=201, url=settings.POST_CREATE, data=asdict(CreateUserRequest.default())
         )
         # Describe what kind of json you expect.
         schema = {
@@ -224,15 +221,15 @@ class TestBackend:
                 "createdAt": {"type": "string"},
             },
         }
-        assert_that(self.validate(json=real.json(), schema=schema)).is_true()
+        assert_that(self.validate(real.json(), schema)).is_true()
 
     @pytest.mark.negative
-    @pytest.mark.test_id("Component-7")
+    @pytest.mark.testid("Component-7")
     def test_post_create_negative(self):
         real = self.post(code=201, url=settings.POST_CREATE)
-        assert_that(real.json()).does_not_contain('fhfhfhfhfkh')
+        assert_that(real.json()).does_not_contain("fhfhfhfhfkh")
 
     @pytest.mark.negative
-    @pytest.mark.test_id("Component-8")
+    @pytest.mark.testid("Component-8")
     def test_wrong(self):
         self.get(url=settings.WRONG, code=404)
