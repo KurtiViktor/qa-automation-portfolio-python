@@ -6,6 +6,7 @@
         "--video=retain-on-failure",
         "--screenshot=on",
         "--output=testruns/playwright",
+        // "--tracing=on"
         // "--browser=webkit"
     ],
     "python.testing.unittestEnabled": true,

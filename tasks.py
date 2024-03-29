@@ -10,7 +10,7 @@ from invoke import task
 
 @task
 def clean(c):
-    c.run("rm -rf reports test-results testruns")
+    c.run("rm -rf report reports test-results testruns")
 
 
 @task
