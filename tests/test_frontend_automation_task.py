@@ -1,165 +1,158 @@
-# """
-# 1. Frontend automation task:
+"""
+1. Frontend automation task:
 
-# Using the following URL https://www.saucedemo.com please write an end-to-end test
-# for the following flows:
-# Using standard_user, select two random items from “PRODUCTS” page, add them to cart
-# and proceed to checkout.
-# At the “Checkout overview” page, validate that “item  total” price
-# is equal to the price of items added on the “PRODUCTS” page.
-# Write a test as  well for the locked_out_user.
-# """
-# import random
-# import re
-# import time
+Using the following URL https://www.saucedemo.com please write an end-to-end test
+for the following flows:
+Using standard_user, select two random items from “PRODUCTS” page, add them to cart
+and proceed to checkout.
+At the “Checkout overview” page, validate that “item  total” price
+is equal to the price of items added on the “PRODUCTS” page.
+Write a test as  well for the locked_out_user.
+"""
 
-# import allure
-# import pytest
-# from assertpy import assert_that
-# from attr import define
-# from faker import Faker
+import random
+import re
 
-# from config import settings
+import allure
+import pytest
+from assertpy import assert_that
+from faker import Faker
+from playwright.sync_api import Page, expect
 
-# fake = Faker()
+from config import settings
 
-
-# @define
-# class CheckoutPage:
-#     driver: browser
-
-#     @allure.step
-#     def checkout_scroll_postal_code(self):
-#         s('#checkout').click()
-#         time.sleep(settings.DELAY)
-#         fio = fake.name().split()
-#         s('#first-name').set_value(fio[0])
-#         time.sleep(settings.DELAY)
-#         s('#last-name').set_value(fio[1])
-#         time.sleep(settings.DELAY)
-#         s('#postal-code').set_value(fake.postcode())
-#         time.sleep(settings.DELAY)
-#         s('#continue').scroll_to().click()
-
-#     @allure.step
-#     def summary_subtotal(self):
-#         elem = s(
-#             '#checkout_summary_container>div>div.summary_info>div.summary_subtotal_label'
-#         ).scroll_to()
-#         x = re.search(r'^Item total: \$(.+?)$', elem.text).group(1)
-#         print(f'{elem.text=}{x=}')
-#         return float(x)
-
-#     @allure.step
-#     def summary_tax(self):
-#         elem = s(
-#             '#checkout_summary_container>div>div.summary_info>div.summary_tax_label'
-#         ).scroll_to()
-#         x = re.search(r'^Tax: \$(.+?)$', elem.text).group(1)
-#         print(f'{elem.text=}{x=}')
-#         return float(x)
-
-#     @allure.step
-#     def summary_total(self):
-#         elem = s(
-#             '#checkout_summary_container>div>div.summary_info>div.summary_total_label'
-#         ).scroll_to()
-#         x = re.search(r'^Total: \$(.+?)$', elem.text).group(1)
-#         print(f'{elem.text=}{x=}')
-#         return float(x)
-
-#     @allure.step
-#     def get_prices(self) -> tuple:
-#         self.checkout_scroll_postal_code()
-#         time.sleep(settings.DELAY)
-#         sum_of_prices = self.summary_subtotal()
-#         time.sleep(settings.DELAY)
-#         tax = self.summary_tax()
-#         time.sleep(settings.DELAY)
-#         total_price = self.summary_total()
-#         time.sleep(settings.DELAY)
-#         s('#cancel').click()
-#         return sum_of_prices, tax, total_price
+fake = Faker()
 
 
-# @define
-# class ProductsPage:
-#     driver: browser
+class CheckoutPage:
+    def __init__(self, page: Page):
+        self.page = page
+        expect(self.page).to_have_url(re.compile(r".*/cart.html"))
 
-#     @allure.step
-#     def reset_app_state(self):
-#         s("#react-burger-menu-btn").click()
-#         s("#reset_sidebar_link").click()
-#         s("#react-burger-cross-btn").click()
+    @allure.step
+    def review_your_cart(self):
+        button = self.page.locator('[data-test="checkout"]')
+        button.scroll_into_view_if_needed()
+        button.click()
 
-#     @allure.step
-#     def select_two_random_items(self) -> CheckoutPage:
-#         items = ss('#inventory_container>div>div.inventory_item')
-#         size = items.size()-1
-#         counter = 0
-#         while counter < 2:
-#             random_item_number = random.randint(0, size)
-#             random_item = items[random_item_number].scroll_to()
-#             random_item.s(by.text('Add to cart')).scroll_to().click()
-#             counter += 1
-#         s('#shopping_cart_container>a').scroll_to().click()
-#         return CheckoutPage(self.driver)
+    @allure.step
+    def set_client_info(self):
+        expect(self.page).to_have_url(re.compile(r".*/checkout-step-one.html"))
+        fio = fake.name().split()
+        self.page.locator('[data-test="firstName"]').fill(fio[0])
+        self.page.locator('[data-test="lastName"]').fill(fio[1])
+        self.page.locator('[data-test="postalCode"]').fill(fake.postcode())
+        self.page.locator('[data-test="continue"]').click()
+
+    @allure.step
+    def get_value(self, locator: str):
+        text = self.page.locator(locator).inner_text()
+        string_number = text.split(":")[-1]
+        string_number = string_number.replace("$", "")
+        return float(string_number)
+
+    @allure.step
+    def subtotal(self):
+        return self.get_value('[data-test="subtotal-label"]')
+
+    @allure.step
+    def tax(self):
+        return self.get_value('[data-test="tax-label"]')
+
+    @allure.step
+    def total(self):
+        return self.get_value('[data-test="total-label"]')
+
+    @allure.step
+    def get_prices(self) -> tuple:
+        expect(self.page).to_have_url(re.compile(r".*/checkout-step-two.html"))
+        sum_of_prices = self.subtotal()
+        tax = self.tax()
+        total_price = self.total()
+        self.page.locator('[data-test="cancel"]').click()
+        return sum_of_prices, tax, total_price
 
 
-# @define
-# class LoginPage:
-#     driver: browser
+class ProductsPage:
+    def __init__(self, page: Page):
+        self.page = page
+        expect(self.page).to_have_url(re.compile(r".*/inventory.html"))
 
-#     @allure.step
-#     def login(self, user, password) -> ProductsPage:
-#         self.driver.open_url(settings.GUI_URL)
-#         s("#user-name").should(be.blank)
-#         s("#user-name").set_value(user).press_enter()
-#         s("#password").should(be.blank)
-#         s("#password").set_value(password).press_enter()
-#         s("#login-button").click()
-#         return ProductsPage(self.driver)
+    @allure.step
+    def reset_app_state(self):
+        self.page.get_by_role("button", name="Open Menu").click()
+        self.page.locator('[data-test="reset-sidebar-link"]').click()
+        self.page.get_by_role("button", name="Close Menu").click()
 
-#     @allure.step
-#     def logout(self):
-#         s("#react-burger-menu-btn").click()
-#         s("#logout_sidebar_link").click()
+    @allure.step
+    def select_random_item(self) -> None:
+        inventory = self.page.locator('[data-test="inventory-list"]')
+        buttons = inventory.get_by_role("button", name="Add to cart")
+        random_number = random.randint(0, buttons.count() - 1)
+        button = buttons.nth(random_number)
+        button.scroll_into_view_if_needed()
+        button.click()
+
+    @allure.step
+    def select_random_items(self, amount: int) -> CheckoutPage:
+        counter = 0
+        while counter < amount:
+            self.select_random_item()
+            counter += 1
+        self.page.locator('[data-test="shopping-cart-link"]').click()
+        return CheckoutPage(self.page)
 
 
-# @pytest.mark.gui
-# @pytest.mark.component
-# class TestSaucedemoGUI:
+class LoginPage:
+    def __init__(self, page: Page):
+        self.page = page
 
-#     @allure.step
-#     def purchase(self, driver, user, password) -> tuple:
-#         login_page = LoginPage(driver)
-#         time.sleep(settings.DELAY)
-#         products_page = login_page.login(user, password)
-#         time.sleep(settings.DELAY)
-#         products_page.reset_app_state()
-#         time.sleep(settings.DELAY)
-#         checkout_page = products_page.select_two_random_items()
-#         time.sleep(settings.DELAY)
-#         result = checkout_page.get_prices()
-#         time.sleep(settings.DELAY)
-#         login_page.logout()
-#         return result
+    @allure.step
+    def navigate(self):
+        self.page.goto(settings.GUI_URL)
+        expect(self.page).to_have_url(settings.GUI_URL)
 
-#     @pytest.mark.qa
-#     @pytest.mark.test_id("Component-9")
-#     def test_standard_user(self, chrome):
-#         sum_of_prices, tax, total_price = self.purchase(
-#             driver=chrome,
-#             user=settings.STANDARD_USER,
-#             password=settings.PASSWORD
-#         )
-#         assert_that(sum_of_prices + tax).is_equal_to(total_price)
+    @allure.step
+    def login(self, user, password) -> ProductsPage:
+        self.navigate()
+        self.page.locator('[data-test="username"]').fill(user)
+        self.page.locator('[data-test="password"]').fill(password)
+        self.page.locator('[data-test="login-button"]').click()
+        return ProductsPage(self.page)
 
-#     @pytest.mark.test_id("Component-10")
-#     def test_locked_out_user(self, chrome):
-#         sum_of_prices, tax, total_price = self.purchase(
-#             driver=chrome,
-#             user=settings.LOCKED_OUT_USER,
-#             password=settings.PASSWORD
-#         )
-#         assert_that(sum_of_prices + tax).is_equal_to(total_price)
+    @allure.step
+    def logout(self):
+        self.page.get_by_role("button", name="Open Menu").click()
+        self.page.locator('[data-test="logout-sidebar-link"]').click()
+
+
+@pytest.mark.gui
+@pytest.mark.component
+class TestSaucedemoGUI:
+    @allure.step
+    def purchase(
+        self,
+        page: Page,
+        user: str = settings.STANDARD_USER,
+        password: str = settings.PASSWORD,
+        amount: int = 2,
+    ) -> tuple:
+        login = LoginPage(page)
+        products = login.login(user, password)
+        products.reset_app_state()
+        checkout = products.select_random_items(amount)
+        checkout.review_your_cart()
+        checkout.set_client_info()
+        result = checkout.get_prices()
+        login.logout()
+        return result
+
+    @pytest.mark.testid("Component-9")
+    def test_standard_user(self, page: Page):
+        sum_, tax, total = self.purchase(page, amount=2)
+        assert_that(sum_ + tax).is_close_to(total, 0.0005)
+
+    @pytest.mark.testid("Component-10")
+    def test_locked_out_user(self, page: Page):
+        sum_, tax, total = self.purchase(page, user=settings.LOCKED_OUT_USER)
+        assert_that(sum_ + tax).is_close_to(total, 0.0005)

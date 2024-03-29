@@ -1,20 +1,25 @@
-# """
-# pytest fixtures offer dramatic improvements
-# over the classic xUnit style of setup/teardown functions
-# """
+"""
+The next example puts the fixture function
+into a separate conftest.py file so that tests
+from multiple test modules in the directory
+can access the fixture function.
+"""
 
-# import pytest
-
-# from config import settings
+import pytest
 
 
-# @pytest.fixture
-# def chrome():
-#     chrome_options = webdriver.ChromeOptions()
-#     chrome_options.add_argument("--enable-automation")
-#     chrome_options.add_argument("--start-maximized")
-#     driver = webdriver.Chrome(executable_path=settings.DRIVER_PATH, options=chrome_options)
-#     browser.set_driver(driver)
-#     browser.timeout = 2
-#     yield browser
-#     browser.close()
+@pytest.fixture(scope="session")
+def browser_type_launch_args(browser_type_launch_args):
+    return {**browser_type_launch_args, "args": ["--start-maximized"]}
+
+
+@pytest.fixture(scope="session")
+def browser_context_args(browser_context_args):
+    return {
+        **browser_context_args,
+        "no_viewport": True,
+        # "viewport": {
+        #     "width": 1920,
+        #     "height": 1080,
+        # },
+    }

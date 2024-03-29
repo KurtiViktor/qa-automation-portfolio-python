@@ -1,15 +1,16 @@
+# pylint: disable=invalid-name
+
 """
 Invoke is a Python (2.7 and 3.4+) library for managing shell-oriented subprocesses
 and organizing executable Python code into CLI-invokable tasks.
 """
-
 
 from invoke import task
 
 
 @task
 def clean(c):
-    c.run("rm -rf report")
+    c.run("rm -rf reports test-results testruns")
 
 
 @task

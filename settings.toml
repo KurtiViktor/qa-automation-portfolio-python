@@ -1,4 +1,4 @@
-GUI_URL = "https://www.saucedemo.com"
+GUI_URL = "https://www.saucedemo.com/"
 API_URL = "https://reqres.in"
 GET_LIST_USERS = "@format {this.API_URL}/api/users?page=2"
 GET_SINGLE_USER = "@format {this.API_URL}/api/users/2"

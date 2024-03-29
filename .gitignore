@@ -131,3 +131,6 @@ dmypy.json
 
 # custom
 /report
+/reports
+/test-results
+/testruns

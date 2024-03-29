@@ -19,6 +19,7 @@ faker = "^24.3.0"
 attrs = "^23.2.0"
 assertpy = "^1.1"
 jsonschema = "^4.21.1"
+pytest-playwright = "^0.4.4"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -29,17 +30,20 @@ pylint = "^2.17.0"
 
 [tool.pytest.ini_options]
 minversion = "7.0"
-addopts = "--alluredir=report/allure_results --html=report/pytest_html.html --self-contained-html"
+addopts = [
+    "--alluredir=testruns/reports/allure_results",
+    "--html=testruns/reports/pytest_html.html",
+    "--self-contained-html",
+]
 testpaths = ["tests"]
 markers = [
     "smoke",
     "UAT",
     "api",
     "gui",
-    "test_id",
+    "testid",
     "component",
     "uat",
-    "qa",
     "negative",
 ]
 

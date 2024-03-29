@@ -8,7 +8,11 @@
             "name": "Poetry pytest",
             "type": "debugpy",
             "request": "launch",
-            "module": "pytest"
+            "module": "pytest",
+            "args": [
+                "--headed",
+                "--slowmo 100"
+            ]
         },
         {
             "name": "Current File",
