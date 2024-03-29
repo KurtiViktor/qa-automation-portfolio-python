@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyexample"
-version = "1.0.0"
+version = "2.0.0"
 description = "Coding example!"
 authors = ["Viktor Kurti <vp.kurti@gmail.com>"]
 readme = "README.md"
@@ -50,7 +50,7 @@ markers = [
 
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "1.0.0"
+version = "2.0.0"
 tag_format = "$version"
 version_files = ["pyproject.toml:version"]
 bump_message = "bump: version $current_version → $new_version"
